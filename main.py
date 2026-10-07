@@ -7,10 +7,6 @@ def dist(p1, p2):
 
 
 def closest_pair(points):
-    """
-    Поиск ближайшей пары точек.
-    Сложность: O(n log n) — разделяй и властвуй.
-    """
     if len(points) < 2:
         return float('inf')
 
