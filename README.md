@@ -43,3 +43,5 @@ for start in graph:
 for c in components:
     print(c)
 ```
+### Вывод
+<img width="1064" height="423" alt="image" src="https://github.com/user-attachments/assets/874f1c13-eb97-4e1c-a06e-2c54c74b3068" />
