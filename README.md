@@ -74,5 +74,6 @@ if __name__ == "__main__":
     print(f"Минимальное расстояние: {min_d}")
     print(f"Точки: {pair}")
 ```
+### Вывод
 <img width="1072" height="421" alt="image" src="https://github.com/user-attachments/assets/38d13778-cc31-49a0-ae01-ab78e18baf4c" />
 
