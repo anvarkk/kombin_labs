@@ -3,54 +3,74 @@
 ```Python
 import math
 
+def dist(p1, p2):
+    return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
 
-def d(a, b):
-    return math.hypot(a[0] - b[0], a[1] - b[1])
+def brute_force(points):
+    n = len(points)
+    if n < 2:
+        return float('inf'), None
+    best_d = float('inf')
+    best_pair = None
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = dist(points[i], points[j])
+            if d < best_d:
+                best_d = d
+                best_pair = (points[i], points[j])
+    return best_d, best_pair
 
+def closest_pair(points):
+    if len(points) < 2:
+        return float('inf'), None
 
-def closest(pts):
-    if len(pts) < 2:
-        return float('inf')
+    points_sorted = sorted(points, key=lambda p: p[0])
 
-    px = sorted(pts)
-    py = sorted(pts, key=lambda p: p[1])
-
-    def go(px, py):
+    def _rec(px, py):
         n = len(px)
-        if n == 2:
-            return d(px[0], px[1])
-        if n == 3:
-            a, b, c = px
-            return min(d(a, b), d(b, c), d(a, c))
+        if n <= 3:
+            return brute_force(px)
 
-        m = n // 2
-        mx = px[m][0]
+        mid = n // 2
+        mid_x = px[mid][0]
+        left_x, right_x = px[:mid], px[mid:]
 
-        lx, rx = px[:m], px[m:]
+        left_set = set(left_x)
+        left_y = [p for p in py if p in left_set]
+        right_y = [p for p in py if p not in left_set]
 
-        lset = set(lx)
-        ly = [p for p in py if p in lset]
-        ry = [p for p in py if p not in lset]
+        d_left, pair_left = _rec(left_x, left_y)
+        d_right, pair_right = _rec(right_x, right_y)
 
-        dl = go(lx, ly)
-        dr = go(rx, ry)
-        best = dl if dl < dr else dr
+        if d_left < d_right:
+            d, best_pair = d_left, pair_left
+        else:
+            d, best_pair = d_right, pair_right
 
-        strip = [p for p in py if abs(p[0] - mx) < best]
+        strip = [p for p in py if abs(p[0] - mid_x) < d]
 
         for i in range(len(strip)):
             j = i + 1
-            while j < len(strip) and strip[j][1] - strip[i][1] < best:
-                dd = d(strip[i], strip[j])
-                if dd < best:
-                    best = dd
+            while j < len(strip) and (strip[j][1] - strip[i][1]) < d:
+                d_new = dist(strip[i], strip[j])
+                if d_new < d:
+                    d = d_new
+                    best_pair = (strip[i], strip[j])
                 j += 1
+        return d, best_pair
 
-        return best
+    py = sorted(points_sorted, key=lambda p: p[1])
+    return _rec(points_sorted, py)
 
-    return go(px, py)
 
+if __name__ == "__main__":
+    data = [
+        (0, 16), (31, 10), (25, 11), (44, 21), (33, 25),
+        (3, 10), (4, 28), (6, 66), (3, 12), (6, 6),
+        (8, 11), (7, 22), (21, 14), (71, 0), (61, 12)
+    ]
 
-pts = [(2, 3), (12, 30), (40, 50), (5, 1), (12, 10), (3, 4)]
-print(closest(pts))
+    min_d, pair = closest_pair(data)
+    print(f"Минимальное расстояние: {min_d}")
+    print(f"Точки: {pair}")
 ```
