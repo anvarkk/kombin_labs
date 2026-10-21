@@ -1,63 +1,88 @@
 import math
 
-def dist(p1, p2):
-    return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
+def dist_sq(p1, p2):
+    # Считаем квадрат расстояния, чтобы не тратить время на корень
+    return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
 
 def brute_force(points):
     n = len(points)
     if n < 2:
         return float('inf'), None
-    best_d = float('inf')
+    
+    best_d_sq = float('inf')
     best_pair = None
     for i in range(n):
         for j in range(i + 1, n):
-            d = dist(points[i], points[j])
-            if d < best_d:
-                best_d = d
+            d_sq = dist_sq(points[i], points[j])
+            if d_sq < best_d_sq:
+                best_d_sq = d_sq
                 best_pair = (points[i], points[j])
-    return best_d, best_pair
+    return best_d_sq, best_pair
 
 def closest_pair(points):
     if len(points) < 2:
         return float('inf'), None
 
+    # Сортируем по X для деления
     points_sorted = sorted(points, key=lambda p: p[0])
 
     def _rec(px, py):
         n = len(px)
+        # База рекурсии
         if n <= 3:
             return brute_force(px)
 
         mid = n // 2
         mid_x = px[mid][0]
-        left_x, right_x = px[:mid], px[mid:]
+        
+        left_x = px[:mid]
+        right_x = px[mid:]
 
+        # Оптимизация: раскидываем точки по половинам за один проход
         left_set = set(left_x)
-        left_y = [p for p in py if p in left_set]
-        right_y = [p for p in py if p not in left_set]
+        left_y = []
+        right_y = []
+        for p in py:
+            if p in left_set:
+                left_y.append(p)
+            else:
+                right_y.append(p)
 
-        d_left, pair_left = _rec(left_x, left_y)
-        d_right, pair_right = _rec(right_x, right_y)
+        d_left_sq, pair_left = _rec(left_x, left_y)
+        d_right_sq, pair_right = _rec(right_x, right_y)
 
-        if d_left < d_right:
-            d, best_pair = d_left, pair_left
+        # Берем минимум из двух половин
+        if d_left_sq < d_right_sq:
+            d_sq, best_pair = d_left_sq, pair_left
         else:
-            d, best_pair = d_right, pair_right
+            d_sq, best_pair = d_right_sq, pair_right
 
-        strip = [p for p in py if abs(p[0] - mid_x) < d]
+        # Полоса вокруг разделителя (сравниваем квадраты, чтобы не считать корень)
+        strip = [p for p in py if (p[0] - mid_x)**2 < d_sq]
 
         for i in range(len(strip)):
             j = i + 1
-            while j < len(strip) and (strip[j][1] - strip[i][1]) < d:
-                d_new = dist(strip[i], strip[j])
-                if d_new < d:
-                    d = d_new
-                    best_pair = (strip[i], strip[j])
+            # Идем по Y, пока разница в квадрате меньше d^2
+            while j < len(strip) and (strip[j][1] - strip[i][1])**2 < d_sq:
+                # Проверяем только пары, где точки из разных половин
+                # (одна в left_set, другая нет)
+                if (strip[i] in left_set) != (strip[j] in left_set):
+                    d_new_sq = dist_sq(strip[i], strip[j])
+                    if d_new_sq < d_sq:
+                        d_sq = d_new_sq
+                        best_pair = (strip[i], strip[j])
                 j += 1
-        return d, best_pair
 
+        return d_sq, best_pair
+
+    # Сортируем по Y для полосы
     py = sorted(points_sorted, key=lambda p: p[1])
-    return _rec(points_sorted, py)
+    
+    # Запускаем рекурсию
+    min_d_sq, pair = _rec(points_sorted, py)
+    
+    # Корень извлекаем только один раз для финального ответа
+    return math.sqrt(min_d_sq), pair
 
 
 if __name__ == "__main__":
