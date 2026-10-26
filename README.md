@@ -10,34 +10,41 @@ edges = [
 ]
 
 graph = defaultdict(list)
-for edge_id, u, v in edges:
-    graph[u].append((v, edge_id))
-    graph[v].append((u, edge_id))
+for edge_id, a, b in edges:
+    graph[a].append((b, edge_id))
+    graph[b].append((a, edge_id))
 
 visited = set()
 used_edges = set()
 components = []
 
-for start in graph:
-    if start in visited:
+for start_node in graph:
+    if start_node in visited:
         continue
-    stack = [start]
-    visited.add(start)
-    component = [start]
+        
+    stack = [start_node]
+    visited.add(start_node)
+    component = [start_node]
+    
     while stack:
         current = stack[-1]
-        found = False
+        has_next_edge = False
+        
         for neighbor, edge_id in graph[current]:
             if edge_id not in used_edges:
                 used_edges.add(edge_id)
-                found = True
+                has_next_edge = True
+                
                 if neighbor not in visited:
                     visited.add(neighbor)
                     stack.append(neighbor)
                     component.append(neighbor)
+                    
                 break
-        if not found:
+                
+        if not has_next_edge:
             stack.pop()
+            
     components.append(component)
 
 for c in components:
