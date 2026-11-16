@@ -1,5 +1,5 @@
 ЛАБОРАТОРНАЯ РАБОТА 3
-'''Python
+```Python
 from collections import defaultdict
 
 # Исходный граф в виде списка рёбер: (номер_ребра, вершина_u, вершина_v)
@@ -53,4 +53,4 @@ for start in graph:
 
 for c in components:
     print(c)
-'''
+```
